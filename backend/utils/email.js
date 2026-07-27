@@ -12,6 +12,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("SMTP Error:", error);
+  } else {
+    console.log("SMTP Ready");
+  }
+});
+
 // Send OTP email for registration verification
 const sendOTP = async (email, otp) => {
   await transporter.sendMail({
@@ -20,7 +28,7 @@ const sendOTP = async (email, otp) => {
     subject: "Your Email Verification OTP",
     html: `
       <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:30px">
-        <h2 style="color:#dc2626">🩸 Blood Donor Finder</h2>
+        <h2 style="color:#dc2626">🩸 Blood Donate</h2>
         <p>Your OTP for email verification:</p>
         <div style="background:#f3f4f6;padding:20px;text-align:center;font-size:36px;
                     font-weight:bold;letter-spacing:12px;border-radius:8px;color:#1f2937">
