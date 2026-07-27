@@ -1,18 +1,36 @@
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 
-// Initialize Resend using your API Key from environment variables
-const resend = new Resend(process.env.RESEND_API_KEY);
+console.log("GMAIL_USER:", process.env.GMAIL_USER);
+console.log("GMAIL_PASS:", process.env.GMAIL_PASS ? "Loaded" : "Missing");
 
-// Define default sender address
-// Note: Use 'onboarding@resend.dev' for testing. Once you verify a custom domain in Resend,
-// update process.env.RESEND_FROM_EMAIL to "Blood Donor Finder <noreply@yourdomain.com>"
-const FROM_EMAIL =
-  process.env.RESEND_FROM_EMAIL || "Blood Donor Finder <onboarding@resend.dev>";
+// Configure transporter explicitly for Port 465 with SSL
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // Required for port 465
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS, // MUST be a 16-character Google App Password
+  },
+  // Set explicit timeouts so requests fail gracefully instead of hanging
+  connectionTimeout: 10000, 
+  greetingTimeout: 5000,
+  socketTimeout: 10000,
+});
+
+// Verify connection configuration on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ SMTP Connection Error:", error);
+  } else {
+    console.log("✅ SMTP Ready to send emails");
+  }
+});
 
 // Send OTP email for registration verification
 const sendOTP = async (email, otp) => {
-  await resend.emails.send({
-    from: FROM_EMAIL,
+  await transporter.sendMail({
+    from: `"Blood Donor Finder" <${process.env.GMAIL_USER}>`,
     to: email,
     subject: "Your Email Verification OTP",
     html: `
@@ -34,11 +52,11 @@ const sendOTP = async (email, otp) => {
 const sendBloodAlert = async (donor, request) => {
   const hospitalPhone = request.hospital?.phone || "";
   const waLink = `https://wa.me/${hospitalPhone.replace(/\D/g, "")}?text=${encodeURIComponent(
-    `Hi, I saw the urgent ${request.bloodGroup} blood request at ${request.hospital?.hospitalName}. I can donate.`,
+    `Hi, I saw the urgent ${request.bloodGroup} blood request at ${request.hospital?.hospitalName}. I can donate.`
   )}`;
 
-  await resend.emails.send({
-    from: FROM_EMAIL,
+  await transporter.sendMail({
+    from: `"Blood Donor Finder" <${process.env.GMAIL_USER}>`,
     to: donor.email,
     subject: `🩸 Urgent Blood Request - ${request.bloodGroup} Needed`,
     html: `
@@ -72,7 +90,7 @@ const sendBloodAlert = async (donor, request) => {
                     </a>
                   </p>`
                   : request.hospital?.location?.coordinates &&
-                      request.hospital.location.coordinates[0] !== 0
+                    request.hospital.location.coordinates[0] !== 0
                     ? `<p><strong>📍 Location:</strong> 
                       <a href="https://www.google.com/maps?q=${request.hospital.location.coordinates[1]},${request.hospital.location.coordinates[0]}" 
                         target="_blank"
@@ -105,8 +123,8 @@ const sendBloodAlert = async (donor, request) => {
 
 // Hospital approval/rejection email
 const sendApprovalEmail = async (hospital, approved) => {
-  await resend.emails.send({
-    from: FROM_EMAIL,
+  await transporter.sendMail({
+    from: `"Blood Donor Finder" <${process.env.GMAIL_USER}>`,
     to: hospital.email,
     subject: approved
       ? "✅ Hospital Account Approved"
@@ -130,8 +148,8 @@ const sendApprovalEmail = async (hospital, approved) => {
 
 // Password reset email
 const sendPasswordReset = async (email, resetUrl) => {
-  await resend.emails.send({
-    from: FROM_EMAIL,
+  await transporter.sendMail({
+    from: `"Blood Donor Finder" <${process.env.GMAIL_USER}>`,
     to: email,
     subject: "Password Reset Request",
     html: `
@@ -157,6 +175,7 @@ module.exports = {
   sendApprovalEmail,
   sendPasswordReset,
 };
+
 
 // console.log("GMAIL_USER:", process.env.GMAIL_USER);
 // console.log("GMAIL_PASS:", process.env.GMAIL_PASS ? "Loaded" : "Missing");
