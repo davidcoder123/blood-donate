@@ -33,7 +33,7 @@ export default function Navbar() {
   };
 
   const n = {
-    nav:   { background: '#dc2626', padding: '0 20px', height: '58px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.25)' },
+    nav:   { background: '#2563eb', padding: '0 20px', height: '58px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.25)' },
     logo:  { color: 'white', fontWeight: 700, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' },
     right: { display: 'flex', alignItems: 'center', gap: '14px' },
     bell:  { position: 'relative', cursor: 'pointer', userSelect: 'none' },
@@ -48,7 +48,9 @@ export default function Navbar() {
 
   return (
     <nav style={n.nav}>
-      <div style={n.logo}>🩸 Blood Donor Finder</div>
+      <div style={n.logo}>
+        <img src="/logo.svg" alt='logo' width={30} height={30}/>
+         Blood Donate</div>
       <div style={n.right}>
         <div style={n.bell} onClick={handleBell}>
           <span style={{ fontSize: '20px', color: 'white' }}>🔔</span>

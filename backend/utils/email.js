@@ -1,12 +1,15 @@
-const nodemailer = require('nodemailer');
+console.log("GMAIL_USER:", process.env.GMAIL_USER);
+console.log("GMAIL_PASS:", process.env.GMAIL_PASS ? "Loaded" : "Missing");
+
+const nodemailer = require("nodemailer");
 
 // Gmail transporter - free forever
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS  // Use App Password, not your real password
-  }
+    pass: process.env.GMAIL_PASS, // Use App Password, not your real password
+  },
 });
 
 // Send OTP email for registration verification
@@ -14,7 +17,7 @@ const sendOTP = async (email, otp) => {
   await transporter.sendMail({
     from: `"Blood Donor Finder" <${process.env.GMAIL_USER}>`,
     to: email,
-    subject: 'Your Email Verification OTP',
+    subject: "Your Email Verification OTP",
     html: `
       <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:30px">
         <h2 style="color:#dc2626">🩸 Blood Donor Finder</h2>
@@ -26,15 +29,15 @@ const sendOTP = async (email, otp) => {
         <p style="color:#6b7280;margin-top:16px">This OTP expires in <strong>10 minutes</strong>.</p>
         <p style="color:#6b7280">If you did not request this, ignore this email.</p>
       </div>
-    `
+    `,
   });
 };
 
 // Send blood request alert to matching donors
 const sendBloodAlert = async (donor, request) => {
-  const hospitalPhone = request.hospital?.phone || '';
-  const waLink = `https://wa.me/${hospitalPhone.replace(/\D/g,'')}?text=${encodeURIComponent(
-    `Hi, I saw the urgent ${request.bloodGroup} blood request at ${request.hospital?.hospitalName}. I can donate.`
+  const hospitalPhone = request.hospital?.phone || "";
+  const waLink = `https://wa.me/${hospitalPhone.replace(/\D/g, "")}?text=${encodeURIComponent(
+    `Hi, I saw the urgent ${request.bloodGroup} blood request at ${request.hospital?.hospitalName}. I can donate.`,
   )}`;
 
   await transporter.sendMail({
@@ -55,28 +58,32 @@ const sendBloodAlert = async (donor, request) => {
             <p><strong>Hospital:</strong> ${request.hospital?.hospitalName}</p>
             <p><strong>Units needed:</strong> ${request.unitsNeeded}</p>
             <p><strong>Urgency:</strong> ${request.urgency.toUpperCase()}</p>
-            <p><strong>City:</strong> ${request.hospital?.city}, ${request.hospital?.state || ''}</p>
-              ${request.hospital?.address
-                ? `<p><strong>Address:</strong> ${request.hospital.address}</p>`
-                : ''}
-              ${request.notes ? `<p><strong>Notes:</strong> ${request.notes}</p>` : ''}
-              ${request.hospital?.address
-                ? `<p><strong>📍 Location:</strong> 
+            <p><strong>City:</strong> ${request.hospital?.city}, ${request.hospital?.state || ""}</p>
+              ${
+                request.hospital?.address
+                  ? `<p><strong>Address:</strong> ${request.hospital.address}</p>`
+                  : ""
+              }
+              ${request.notes ? `<p><strong>Notes:</strong> ${request.notes}</p>` : ""}
+              ${
+                request.hospital?.address
+                  ? `<p><strong>📍 Location:</strong> 
                     <a href="https://www.google.com/maps/search/${encodeURIComponent(request.hospital.address)}" 
                       target="_blank"
                       style="color:#dc2626;font-weight:bold;">
                       View on Google Maps
                     </a>
                   </p>`
-                : request.hospital?.location?.coordinates && request.hospital.location.coordinates[0] !== 0
-                  ? `<p><strong>📍 Location:</strong> 
+                  : request.hospital?.location?.coordinates &&
+                      request.hospital.location.coordinates[0] !== 0
+                    ? `<p><strong>📍 Location:</strong> 
                       <a href="https://www.google.com/maps?q=${request.hospital.location.coordinates[1]},${request.hospital.location.coordinates[0]}" 
                         target="_blank"
                         style="color:#dc2626;font-weight:bold;">
                         View on Google Maps
                       </a>
                     </p>`
-                  : ''
+                    : ""
               }
               
           </div>
@@ -96,7 +103,7 @@ const sendBloodAlert = async (donor, request) => {
           </div>
         </div>
       </div>
-    `
+    `,
   });
 };
 
@@ -105,20 +112,23 @@ const sendApprovalEmail = async (hospital, approved) => {
   await transporter.sendMail({
     from: `"Blood Donor Finder" <${process.env.GMAIL_USER}>`,
     to: hospital.email,
-    subject: approved ? '✅ Hospital Account Approved' : '❌ Hospital Account Rejected',
+    subject: approved
+      ? "✅ Hospital Account Approved"
+      : "❌ Hospital Account Rejected",
     html: `
       <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:30px">
-        <h2 style="color:${approved ? '#16a34a' : '#dc2626'}">
-          ${approved ? '✅ Account Approved' : '❌ Account Rejected'}
+        <h2 style="color:${approved ? "#16a34a" : "#dc2626"}">
+          ${approved ? "✅ Account Approved" : "❌ Account Rejected"}
         </h2>
         <p>Dear <strong>${hospital.hospitalName}</strong>,</p>
-        <p>Your hospital account has been <strong>${approved ? 'approved' : 'rejected'}</strong>.</p>
-        ${approved
-          ? `<p>You can now <a href="${process.env.CLIENT_URL}/login">login</a> and post blood requests.</p>`
-          : '<p>Please contact support for more information.</p>'
+        <p>Your hospital account has been <strong>${approved ? "approved" : "rejected"}</strong>.</p>
+        ${
+          approved
+            ? `<p>You can now <a href="${process.env.CLIENT_URL}/login">login</a> and post blood requests.</p>`
+            : "<p>Please contact support for more information.</p>"
         }
       </div>
-    `
+    `,
   });
 };
 
@@ -127,7 +137,7 @@ const sendPasswordReset = async (email, resetUrl) => {
   await transporter.sendMail({
     from: `"Blood Donor Finder" <${process.env.GMAIL_USER}>`,
     to: email,
-    subject: 'Password Reset Request',
+    subject: "Password Reset Request",
     html: `
       <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:30px">
         <h2 style="color:#dc2626">🩸 Password Reset</h2>
@@ -141,8 +151,13 @@ const sendPasswordReset = async (email, resetUrl) => {
         <p style="color:#6b7280">This link expires in <strong>1 hour</strong>.</p>
         <p style="color:#6b7280">If you did not request this, ignore this email.</p>
       </div>
-    `
+    `,
   });
 };
 
-module.exports = { sendOTP, sendBloodAlert, sendApprovalEmail, sendPasswordReset };
+module.exports = {
+  sendOTP,
+  sendBloodAlert,
+  sendApprovalEmail,
+  sendPasswordReset,
+};
