@@ -67,3 +67,6 @@ export const getAllRequests = () => API.get("/admin/requests");
 // ── Notifications ─────────────────────────────────────────────
 export const getNotifications = () => API.get("/notifications");
 export const markAllRead = () => API.patch("/notifications/read-all");
+
+// ── Default Export (Resolves Vercel Import Error) ──────────────
+export default API;
