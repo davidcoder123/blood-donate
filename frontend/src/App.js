@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { requestNotificationPermission, onMessageListener } from "./firebase";
+import api from "./services/api";
+
 import Login from "./pages/Login";
 import RegisterDonor from "./pages/RegisterDonor";
 import RegisterHospital from "./pages/RegisterHospital";
@@ -32,14 +35,48 @@ function ProtectedRoute({ children, role }) {
   return children;
 }
 
+function AppContent() {
+  const { isLoggedIn } = useAuth();
+
+  useEffect(() => {
+    // Only request permission and attempt to save token if user is authenticated
+    if (isLoggedIn) {
+      requestNotificationPermission().then((token) => {
+        if (token) {
+          api.post("/auth/save-token", { fcmToken: token }).catch((err) => {
+            console.error("Failed to save FCM token to backend:", err);
+          });
+        }
+      });
+    }
+
+    // Set up foreground push notification listener
+    onMessageListener()
+      .then((payload) => {
+        console.log("Foreground Notification Received:", payload);
+        if (payload?.notification) {
+          toast.success(
+            `${payload.notification.title}: ${payload.notification.body}`,
+          );
+        }
+      })
+      .catch((err) => console.log("Failed to receive message: ", err));
+  }, [isLoggedIn]);
+
+  return (
+    <>
+      <AppRoutes />
+      <PWAInstallButton />
+    </>
+  );
+}
+
 function AppRoutes() {
   const { user } = useAuth();
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
-
-      {/* <Route path="/login" element={<LandingPage />} /> */}
       <Route path="/register/donor" element={<RegisterDonor />} />
       <Route path="/register/hospital" element={<RegisterHospital />} />
       <Route
@@ -84,8 +121,7 @@ export default function App() {
           position="top-right"
           toastOptions={{ style: { borderRadius: "10px", fontSize: "14px" } }}
         />
-        <AppRoutes />
-        <PWAInstallButton />
+        <AppContent />
       </BrowserRouter>
     </AuthProvider>
   );

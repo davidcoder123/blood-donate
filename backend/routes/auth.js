@@ -30,6 +30,18 @@ const generateToken = (id) =>
 const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
+//notification
+// POST /api/auth/save-token
+router.post("/save-token", authMiddleware, async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    await User.findByIdAndUpdate(req.user.id, { fcmToken });
+    res.status(200).json({ message: "FCM Token updated successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to save token" });
+  }
+});
+
 // ── SEND OTP (step 1 of donor registration) ──────────────────
 router.post(
   "/send-otp",
