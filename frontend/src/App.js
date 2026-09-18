@@ -9,6 +9,7 @@ import DonorDashboard from "./pages/DonorDashboard";
 import HospitalDashboard from "./pages/HospitalDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import LandingPage from "./LandingPage";
+import PWAInstallButton from "./components/PWAInstallButton";
 
 function ProtectedRoute({ children, role }) {
   const { user, isLoggedIn, loading } = useAuth();
@@ -84,6 +85,7 @@ export default function App() {
           toastOptions={{ style: { borderRadius: "10px", fontSize: "14px" } }}
         />
         <AppRoutes />
+        <PWAInstallButton />
       </BrowserRouter>
     </AuthProvider>
   );
