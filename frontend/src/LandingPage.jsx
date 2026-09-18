@@ -223,7 +223,7 @@ export default function LandingPage() {
       {/* Footer Title */}
       <div style={styles.footerSection}>
         <h2 style={styles.footerTitle}>
-          &copy;2026 Federal Medical Care Umuahia
+          &copy;2026 Federal Medical Center Umuahia
         </h2>
       </div>
     </div>
